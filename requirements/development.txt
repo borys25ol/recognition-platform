@@ -1,0 +1,11 @@
+aiohttp
+aioredis
+aioreloader
+trafaret_config
+sqlalchemy
+aiopg
+werkzeug
+alembic
+ujson
+aiohttp_apispec
+aiojobs

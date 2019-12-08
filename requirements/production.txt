@@ -1,0 +1,8 @@
+aiohttp==3.5.4
+trafaret_config==2.0.2
+markdown2==2.3.7
+aiopg[sa]==0.16.0
+psycopg2-binary==2.7.7
+alembic==1.0.7
+aioredis==1.2.0
+uvloop==0.12.2
