@@ -6,6 +6,7 @@ import aioredis
 from aiohttp import web
 
 from api.db.db import init_pg, close_pg
+from api.middlewares.jwt_auth import jwt_auth_middleware
 from utils.common import init_config
 from .routes import init_routes
 
@@ -66,7 +67,7 @@ def init_app(config=None) -> web.Application:
     :param config:
     :return:
     """
-    app = web.Application()
+    app = web.Application(middlewares=[jwt_auth_middleware])
 
     init_config(app, config)
 

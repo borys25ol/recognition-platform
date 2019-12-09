@@ -2,6 +2,7 @@ import pathlib
 
 from aiohttp import web
 
+from api.auth.handlers import register_user, login_user
 from api.handlers import (
     get_urls_for_recognition, post_urls_for_recognition, delete_urls_for_recognition,
     start_processing_images,
@@ -26,3 +27,7 @@ def init_routes(app: web.Application):
     router.add_get('/api/v1/urls/start_processing', start_processing_images, name='start-processing')
 
     router.add_get('/api/v1/tasks', get_all_running_tasks_count, name='get-tasks')
+
+    # Auth routs
+    router.add_post('/api/v1/register', register_user, name='register')
+    router.add_post('/api/v1/login', login_user, name='login')

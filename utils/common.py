@@ -14,7 +14,6 @@ DEFAULT_CONFIG_PATH = PROJECT_PATH / 'config' / DEFAULT_CONFIG_FILE
 TRAFARET = T.Dict({
     T.Key('app'):
         T.Dict({
-            'site_name': T.String(),
             'host': T.String(),
             'port': T.Int(),
         }),
@@ -30,6 +29,12 @@ TRAFARET = T.Dict({
         T.Dict({
             'port': T.Int(),
             'host': T.String(),
+        }),
+    T.Key('jwt_auth'):
+        T.Dict({
+            'jwt_secret': T.String(),
+            'jwt_algorithm': T.String(),
+            'jset_exp_delta_seconds': T.Int(),
         }),
 })
 

@@ -6,8 +6,10 @@ from aiohttp_apispec import request_schema
 
 from api.schemas import UrlsDataSchema, ProductIdSchema
 from api.tasks import async_image_process
+from utils.security import login_required
 
 
+@login_required
 async def get_urls_for_recognition(request: web.Request) -> web.Response:
     """ Get all images urls from Redis.
 
@@ -21,6 +23,7 @@ async def get_urls_for_recognition(request: web.Request) -> web.Response:
     return web.json_response({"ids": response_data}, dumps=ujson.dumps)
 
 
+@login_required
 @request_schema(UrlsDataSchema)
 async def post_urls_for_recognition(request: web.Request) -> web.Response:
     """ Set all images to Redis.
@@ -36,6 +39,7 @@ async def post_urls_for_recognition(request: web.Request) -> web.Response:
     return web.HTTPCreated()
 
 
+@login_required
 @request_schema(ProductIdSchema)
 async def delete_urls_for_recognition(request: web.Request) -> web.Response:
     """ Delete images urls from Redis by product id.
@@ -51,6 +55,7 @@ async def delete_urls_for_recognition(request: web.Request) -> web.Response:
     return web.HTTPNoContent()
 
 
+@login_required
 async def start_processing_images(request: web.Request) -> web.Response:
     """ Start processing images
 
@@ -71,6 +76,7 @@ async def start_processing_images(request: web.Request) -> web.Response:
     return web.Response()
 
 
+@login_required
 async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     """ Get all active tasks in queue.
 
@@ -78,4 +84,4 @@ async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     :return: web response in json format
     """
     all_tasks_count = len(asyncio.Task.all_tasks())
-    return web.json_response({'tasks_count': all_tasks_count - 5})
+    return web.json_response({'tasks_count': all_tasks_count - 6})
