@@ -11,6 +11,7 @@ import pytesseract
 
 def check_image(body, text):
     """ Function that read image body and check text on image
+
     :param body: Image bytes body
     :param text: Text that need to check on image
     :return:
@@ -25,6 +26,7 @@ def check_image(body, text):
 
 def decode_value(value):
     """ Function that decoded value to utf-8
+
     :param value: bytes value
     :return:
     """

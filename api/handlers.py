@@ -4,8 +4,8 @@ import ujson
 from aiohttp import web
 from aiohttp_apispec import request_schema
 
-from api.tasks import async_image_process, load_data_callback
 from api.schemas import UrlsDataSchema, ProductIdSchema
+from api.tasks import async_image_process
 
 
 async def get_urls_for_recognition(request: web.Request) -> web.Response:
@@ -16,7 +16,7 @@ async def get_urls_for_recognition(request: web.Request) -> web.Response:
     """
     redis = request.app['create_redis']
 
-    response_data = await redis.keys('*')
+    response_data = await redis.keys('*:start_id*')
 
     return web.json_response({"ids": response_data}, dumps=ujson.dumps)
 
@@ -31,7 +31,7 @@ async def post_urls_for_recognition(request: web.Request) -> web.Response:
     redis = request.app['create_redis']
     data = await request.json()
 
-    await redis.sadd(data['product_id'], *data['images_urls'])
+    await redis.sadd('{}:start_id'.format(str(data['product_id'])), *data['images_urls'])
 
     return web.HTTPCreated()
 
@@ -57,19 +57,16 @@ async def start_processing_images(request: web.Request) -> web.Response:
     :param request: web request
     :return:
     """
-    executor = request.app['executor']
+    loop = asyncio.get_running_loop()
     redis = request.app['create_redis']
-    loop = asyncio.get_event_loop()
 
-    keys = await redis.keys('*')
+    keys = await redis.keys('*:start_id*')
     for key in keys:
-        if 'result' not in key.decode('utf-8'):
-            image_urls = await redis.smembers(key)
-            data = {key: image_urls}
-            task = asyncio.create_task(
-                async_image_process(loop, executor, redis, data)
-            )
-            task.add_done_callback(lambda t: load_data_callback(request, loop))
+        image_urls = await redis.smembers(key)
+        loop.create_task(
+            async_image_process(request, key, image_urls)
+        )
+        await redis.delete(key)
 
     return web.Response()
 
@@ -81,5 +78,4 @@ async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     :return: web response in json format
     """
     all_tasks_count = len(asyncio.Task.all_tasks())
-
     return web.json_response({'tasks_count': all_tasks_count - 5})

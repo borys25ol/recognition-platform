@@ -1,4 +1,3 @@
-import asyncio
 import os
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
@@ -16,6 +15,7 @@ templates_path = os.path.join(os.path.dirname(__file__), 'templates')
 async def redis(app: web.Application) -> None:
     """A function that, when the server is started, connects to redis,
     and after stopping it breaks the connection (after yield)
+
     :param app:
     :return:
     """
@@ -35,6 +35,7 @@ async def redis(app: web.Application) -> None:
 
 async def init_executor(app: web.Application) -> web.Application:
     """ Initialize ThreadPoolExecutor for running blocking tasks
+
     :param app: Web application
     :return: Web application
     """
@@ -45,7 +46,8 @@ async def init_executor(app: web.Application) -> web.Application:
 
 
 async def close_executor(app: web.Application) -> web.Application:
-    """ Cancel all tasks.
+    """ Shutdown executor instance
+
     :param app: Web application
     :return: Web application
     """
@@ -60,6 +62,7 @@ async def close_executor(app: web.Application) -> web.Application:
 
 def init_app(config=None) -> web.Application:
     """ Initialize application
+
     :param config:
     :return:
     """

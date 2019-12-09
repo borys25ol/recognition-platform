@@ -7,6 +7,3 @@ class ProductIdSchema(Schema):
 
 class UrlsDataSchema(ProductIdSchema):
     images_urls = fields.List(fields.URL, required=True)
-
-
-
