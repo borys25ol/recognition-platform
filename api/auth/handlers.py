@@ -5,10 +5,13 @@ import jwt
 from aiohttp import web
 from aiohttp.web_response import json_response
 from aiohttp_apispec import request_schema
+import trafaret as T
+from trafaret import DataError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from api.db.tables import users
 from api.schemas import UserLoginSchema, UserRegisterSchema
+from api.validators.auth import LOGIN_TRAFARET, REGISTER_TRAFARET
 
 
 @request_schema(UserLoginSchema)
@@ -20,6 +23,12 @@ async def login_user(request: web.Request) -> web.Response:
     """
     jwt_config = request.app['config']['jwt_auth']
     json_data = await request.json()
+
+    result = T.catch_error(LOGIN_TRAFARET, json_data)
+    if isinstance(result, DataError):
+        errors = result.as_dict()
+        return json_response({'errors': errors}, status=400)
+
     async with request.app['db'].acquire() as connection:
         cursor = await connection.execute(
             users.select()
@@ -52,6 +61,11 @@ async def register_user(request: web.Request) -> web.Response:
     :return: web response in json format
     """
     json_data = await request.json()
+    result = T.catch_error(REGISTER_TRAFARET, json_data)
+    if isinstance(result, DataError):
+        errors = result.as_dict()
+        return json_response({'errors': errors}, status=400)
+
     async with request.app['db'].acquire() as connection:
         cursor = await connection.execute(
             users.select()

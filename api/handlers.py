@@ -1,5 +1,3 @@
-import asyncio
-
 import ujson
 from aiohttp import web
 from aiohttp_apispec import request_schema
@@ -62,15 +60,16 @@ async def start_processing_images(request: web.Request) -> web.Response:
     :param request: web request
     :return:
     """
-    loop = asyncio.get_running_loop()
+    tasks = request.app['tasks']
     redis = request.app['create_redis']
+    scheduler = request.app['AIOJOBS_SCHEDULER']
 
     keys = await redis.keys('*:start_id*')
     for key in keys:
         image_urls = await redis.smembers(key)
-        loop.create_task(
-            async_image_process(request, key, image_urls)
-        )
+        task = scheduler.spawn(async_image_process(request, key, image_urls))
+        tasks.append(task)
+        await task
         await redis.delete(key)
 
     return web.Response()
@@ -83,5 +82,5 @@ async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     :param request: web request
     :return: web response in json format
     """
-    all_tasks_count = len(asyncio.Task.all_tasks())
-    return web.json_response({'tasks_count': all_tasks_count - 6})
+    all_tasks_count = request.app['AIOJOBS_SCHEDULER'].active_count
+    return web.json_response({'tasks_count': all_tasks_count})

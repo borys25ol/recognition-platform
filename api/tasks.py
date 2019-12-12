@@ -44,6 +44,7 @@ async def async_image_process(request: web.Request, product_id: bytes, image_url
         ]
         for download_future in asyncio.as_completed(download_futures):
             result, url = await download_future
+            print(result)
             if result:
                 async with request.app['db'].acquire() as connection:
                     await connection.execute(

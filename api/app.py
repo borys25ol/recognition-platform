@@ -4,6 +4,7 @@ from functools import partial
 
 import aioredis
 from aiohttp import web
+from aiojobs import create_scheduler
 
 from api.db.db import init_pg, close_pg
 from api.middlewares.jwt_auth import jwt_auth_middleware
@@ -61,6 +62,28 @@ async def close_executor(app: web.Application) -> web.Application:
     return app
 
 
+async def init_aiojobs(app: web.Application, **kwargs) -> web.Application:
+    """ Initialize aiojobs scheduler
+
+    :param app: Web application
+    :return: Web application
+    """
+    app['AIOJOBS_SCHEDULER'] = await create_scheduler(**kwargs)
+
+    return app
+
+
+async def close_aiojobs(app: web.Application) -> web.Application:
+    """ Close aiojobs scheduler
+
+    :param app: Web application
+    :return: Web application
+    """
+    await app['AIOJOBS_SCHEDULER'].close()
+
+    return app
+
+
 def init_app(config=None) -> web.Application:
     """ Initialize application
 
@@ -74,9 +97,12 @@ def init_app(config=None) -> web.Application:
     # create db connection on startup, shutdown on exit
     app.on_startup.append(init_pg)
     app.on_startup.append(init_executor)
+    app.on_startup.append(init_aiojobs)
 
     app.on_cleanup.append(close_pg)
     app.on_cleanup.append(close_executor)
+    app.on_cleanup.append(close_aiojobs)
+
 
     app.cleanup_ctx.extend([
         redis,
