@@ -6,8 +6,8 @@ from api.auth.handlers import register_user, login_user
 from api.handlers import (
     get_urls_for_recognition, post_urls_for_recognition, delete_urls_for_recognition,
     start_processing_images,
-    get_all_running_tasks_count
-)
+    get_all_running_tasks_count,
+    get_json_result)
 
 PROJECT_PATH = pathlib.Path(__file__).parent
 
@@ -31,3 +31,6 @@ def init_routes(app: web.Application):
     # Auth routs
     router.add_post('/api/v1/register', register_user, name='register')
     router.add_post('/api/v1/login', login_user, name='login')
+
+    # Results
+    router.add_get('/api/v1/results', get_json_result, name='results')

@@ -1,7 +1,10 @@
+from json import JSONDecodeError
+
 import ujson
 from aiohttp import web
 from aiohttp_apispec import request_schema
 
+from api.db.db_helpers import get_result_from_db
 from api.schemas import UrlsDataSchema, ProductIdSchema
 from api.tasks import async_image_process
 from utils.security import login_required
@@ -27,10 +30,13 @@ async def post_urls_for_recognition(request: web.Request) -> web.Response:
     """ Set all images to Redis.
 
     :param request: web request
-    :return: web response with 201 status code
+    :return: web response with 201 status code or 400 if invalid json body
     """
     redis = request.app['create_redis']
-    data = await request.json()
+    try:
+        data = await request.json()
+    except JSONDecodeError:
+        return web.json_response({'message': 'JSON body is not correct'}, status=400)
 
     await redis.sadd('{}:start_id'.format(str(data['product_id'])), *data['images_urls'])
 
@@ -66,11 +72,11 @@ async def start_processing_images(request: web.Request) -> web.Response:
 
     keys = await redis.keys('*:start_id*')
     for key in keys:
-        image_urls = await redis.smembers(key)
+        image_urls = await redis.smembers(key, encoding='utf-8')
         task = scheduler.spawn(async_image_process(request, key, image_urls))
         tasks.append(task)
         await task
-        await redis.delete(key)
+        # await redis.delete(key)
 
     return web.Response()
 
@@ -84,3 +90,25 @@ async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     """
     all_tasks_count = request.app['AIOJOBS_SCHEDULER'].active_count
     return web.json_response({'tasks_count': all_tasks_count})
+
+
+@login_required
+async def get_json_result(request: web.Request) -> web.Response:
+    """ Get all paginated results from tasks.
+
+    :param request: web request
+    :return: web response in json format
+    """
+    query = request.query
+
+    try:
+        offset = int(query.get('offset', 0))
+        limit = int(query.get('limit', 24))
+    except ValueError:
+        return web.json_response({'message': 'Invalid query params'}, dumps=ujson.dumps)
+
+    limit = min(limit, 24)
+
+    data, row_count = await get_result_from_db(request, limit, offset)
+
+    return web.json_response({'count': row_count, 'results': data}, dumps=ujson.dumps)

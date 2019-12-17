@@ -14,7 +14,7 @@ async def jwt_auth_middleware(app, handler):
     :return:
     """
     async def middleware(request: web.Request):
-        request.user = None
+        request.app['user'] = None
         jwt_config = request.app['config']['jwt_auth']
         jwt_token = request.headers.get('Authorization')
         if jwt_token:
@@ -32,7 +32,7 @@ async def jwt_auth_middleware(app, handler):
                         .where(users.c.id == payload['user_id'])
                 )
                 user = await cursor.fetchone()
-                request.user = dict(user)
+                request.app['user'] = dict(user)
         return await handler(request)
     return middleware
 

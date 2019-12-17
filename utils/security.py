@@ -8,7 +8,7 @@ def login_required(func):
     :return:
     """
     def wrapper(request):
-        if not request.user:
+        if not  request.app['user']:
             return json_response({'message': 'Auth required'}, status=401)
         return func(request)
     return wrapper
