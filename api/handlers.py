@@ -76,7 +76,7 @@ async def start_processing_images(request: web.Request) -> web.Response:
         task = scheduler.spawn(async_image_process(request, key, image_urls))
         tasks.append(task)
         await task
-        # await redis.delete(key)
+        await redis.delete(key)
 
     return web.Response()
 
@@ -88,8 +88,14 @@ async def get_all_running_tasks_count(request: web.Request) -> web.Response:
     :param request: web request
     :return: web response in json format
     """
-    all_tasks_count = request.app['AIOJOBS_SCHEDULER'].active_count
-    return web.json_response({'tasks_count': all_tasks_count})
+    running_tasks_count = request.app['AIOJOBS_SCHEDULER'].active_count
+    pending_tasks_count = request.app['AIOJOBS_SCHEDULER'].pending_count
+
+    data = {
+        'running_tasks': running_tasks_count,
+        'pending_tasks': pending_tasks_count,
+    }
+    return web.json_response(data)
 
 
 @login_required

@@ -42,7 +42,7 @@ async def init_executor(app: web.Application) -> web.Application:
     :return: Web application
     """
     app['tasks'] = []
-    app['executor'] = ThreadPoolExecutor()
+    app['executor'] = ThreadPoolExecutor(max_workers=2)
 
     return app
 
@@ -54,21 +54,21 @@ async def close_executor(app: web.Application) -> web.Application:
     :return: Web application
     """
     for task in app['tasks']:
-        task.cancel()
-        await task
+        task.close()
 
     app['executor'].shutdown()
 
     return app
 
 
-async def init_aiojobs(app: web.Application, **kwargs) -> web.Application:
+async def init_aiojobs(app: web.Application) -> web.Application:
     """ Initialize aiojobs scheduler
 
     :param app: Web application
     :return: Web application
     """
-    app['AIOJOBS_SCHEDULER'] = await create_scheduler(**kwargs)
+
+    app['AIOJOBS_SCHEDULER'] = await create_scheduler()
 
     return app
 

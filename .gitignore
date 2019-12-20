@@ -110,3 +110,5 @@ static_root
 versions
 
 .vscode/
+
+*.csv

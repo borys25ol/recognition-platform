@@ -10,3 +10,4 @@ ujson
 aiohttp_apispec
 aiojobs
 pyjwt
+aiofiles
