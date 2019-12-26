@@ -41,7 +41,7 @@ async def get_result_from_db(request: web.Request, limit, offset):
     async with request.app['db'].acquire() as connection:
         sql_query = """
             SELECT 
-                product_id, image_url 
+                product_id, image_url, image_text 
             FROM 
                 images
             WHERE user_id = {user_id}
