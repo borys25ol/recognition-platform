@@ -38,7 +38,12 @@ async def post_urls_for_recognition(request: web.Request) -> web.Response:
     except JSONDecodeError:
         return web.json_response({'message': 'JSON body is not correct'}, status=400)
 
-    await redis.sadd('{}:start_id'.format(str(data['product_id'])), *data['images_urls'])
+    task_body = {
+        'image_urls': data['images_urls'],
+        'image_text': data['image_text']
+    }
+
+    await redis.set('{}:start_id'.format(str(data['product_id'])), ujson.dumps(task_body))
 
     return web.HTTPCreated()
 
@@ -54,7 +59,9 @@ async def delete_urls_for_recognition(request: web.Request) -> web.Response:
     redis = request.app['create_redis']
     product_id = request.match_info['product_id']
 
-    await redis.delete(product_id)
+    redis_key = '{}:start_id'.format(product_id)
+
+    await redis.delete(redis_key)
 
     return web.HTTPNoContent()
 
@@ -72,9 +79,13 @@ async def start_processing_images(request: web.Request) -> web.Response:
 
     keys = await redis.keys('*:start_id*')
     for key in keys:
-        image_urls = await redis.smembers(key, encoding='utf-8')
-        task = scheduler.spawn(async_image_process(request, key, image_urls))
+        data = await redis.get(key, encoding='utf-8')
+        data = ujson.loads(data)
+        task = scheduler.spawn(
+            async_image_process(request, key, data['image_urls'], data['image_text'])
+        )
         tasks.append(task)
+
         await task
         await redis.delete(key)
 

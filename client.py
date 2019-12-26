@@ -63,7 +63,8 @@ async def get_auth_token(session: aiohttp.ClientSession):
         token = data.get('token')
         if not token:
             logger.info('Auth error')
-        logger.info('Token receive successfully')
+        else:
+            logger.info('Token receive successfully')
         return token
 
 

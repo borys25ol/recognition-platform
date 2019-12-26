@@ -17,5 +17,6 @@ images = sa.Table(
     sa.Column('id', sa.Integer, primary_key=True, index=True),
     sa.Column('product_id', sa.String(20), unique=False, nullable=False),
     sa.Column('image_url', sa.String, nullable=False),
+    sa.Column('image_text', sa.String, nullable=False),
     sa.Column('user_id', sa.Integer, ForeignKey('users.id', ondelete='CASCADE'))
 )
