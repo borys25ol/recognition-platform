@@ -53,7 +53,10 @@ def get_config(argv: Any = None) -> Any:
     )
 
     # ignore unknown options
-    options, unknown = ap.parse_known_args(argv)
+    if isinstance(argv, str):
+        options, unknown = ap.parse_known_args(['-c', argv])
+    else:
+        options, unknown = ap.parse_known_args(argv)
 
     config = commandline.config_from_options(options, TRAFARET)
     return config

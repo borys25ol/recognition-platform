@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, MetaData
 from werkzeug.security import generate_password_hash
 
-from api.db.tables import users
+from api.db.tables import users, images
 from utils.common import get_config
 
 DSN = "postgresql://{user}:{password}@{host}:{port}/{database}"
@@ -13,7 +13,7 @@ class RecordNotFound(Exception):
 
 def create_tables(engine):
     meta = MetaData()
-    meta.create_all(bind=engine, tables=[users])
+    meta.create_all(bind=engine, tables=[users, images])
 
 
 def drop_tables(engine):
@@ -37,7 +37,4 @@ def sample_user_data(engine):
 if __name__ == '__main__':
     db_url = DSN.format(**get_config()['postgres'])
     engine = create_engine(db_url)
-
-    # setup_test_db(engine)
-
-    sample_user_data(engine)
+    create_tables(engine)

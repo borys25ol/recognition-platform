@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+    web:
+        container_name: tesseract_app
+        build:
+            context: .
+        environment:
+            DB_HOST: db
+            REDIS_HOST: redis
+            PYTHONPATH: /app
+            CONFIG_FILE: test.yml
+        ports:
+            - "5000:5000"
+        networks:
+            - webnet
+        depends_on:
+            - db
+            - redis
+        command: ["./scripts/wait-for-it.sh", "db:5432", "--", "./scripts/start.sh"]
+    redis:
+        image: redis
+        networks:
+            - webnet
+    db:
+        image: postgres
+        networks:
+            - webnet
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_DB: tesseract
+
+networks:
+    webnet:
