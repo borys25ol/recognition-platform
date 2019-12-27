@@ -19,9 +19,14 @@ async def get_urls_for_recognition(request: web.Request) -> web.Response:
     """
     redis = request.app['create_redis']
 
-    response_data = await redis.keys('*:start_id*')
+    data = await redis.keys('*:start_id*')
 
-    return web.json_response({"ids": response_data}, dumps=ujson.dumps)
+    if len(data) < 50:
+        response_data = {"ids": data}
+    else:
+        response_data = {"ids_count": len(data)}
+
+    return web.json_response(response_data, dumps=ujson.dumps)
 
 
 @login_required

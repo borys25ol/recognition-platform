@@ -5,6 +5,8 @@ services:
         container_name: tesseract_app
         build:
             context: .
+        volumes:
+            - .:/app
         environment:
             DB_HOST: db
             REDIS_HOST: redis
@@ -18,10 +20,12 @@ services:
             - db
             - redis
         command: ["./scripts/wait-for-it.sh", "db:5432", "--", "./scripts/start.sh"]
+
     redis:
         image: redis
         networks:
             - webnet
+
     db:
         image: postgres
         networks:

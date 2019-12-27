@@ -16,6 +16,7 @@ TRAFARET = T.Dict({
         T.Dict({
             'host': T.String(),
             'port': T.Int(),
+            'workers': T.Int(),
         }),
     T.Key('postgres'):
         T.Dict({

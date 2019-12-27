@@ -41,8 +41,10 @@ async def init_executor(app: web.Application) -> web.Application:
     :param app: Web application
     :return: Web application
     """
+    workers = app['config']['app']['workers']
+
     app['tasks'] = []
-    app['executor'] = ThreadPoolExecutor(max_workers=2)
+    app['executor'] = ThreadPoolExecutor(max_workers=workers)
 
     return app
 

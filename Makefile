@@ -19,6 +19,12 @@ clean_image:
 bash:
 	@docker exec -it $(PROJECT_APP) bash
 
+docker-redis:
+	@docker exec -it $(PROJECT_NAME)_redis_1 redis-cli
+
+docker-psql:
+	@docker exec -it $(PROJECT_NAME)_db_1 psql -U postgres
+
 
 # Postgres
 psql:
